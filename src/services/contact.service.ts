@@ -57,4 +57,14 @@ export const contactService = {
       throw error;
     }
   },
+  async deleteContact(id: number): Promise<any> {
+    try {
+      const response = await axios.delete(`${BASE_URL}contact/remove/${id}`); // Sending DELETE request
+      console.log(response.data);
+      return response.data; // Assuming the API returns a success message
+    } catch (error) {
+      console.error('Error deleting contact:', error);
+      throw error;
+    }
+  },
 };
