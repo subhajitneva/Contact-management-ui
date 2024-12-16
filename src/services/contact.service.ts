@@ -18,10 +18,21 @@ export const contactService = {
   async getContacts(): Promise<Contact[]> {
     try {
       const response = await axios.get(BASE_URL+"contact/display");
-      console.log(response.data.data.data);
+      console.log(response.data);
 
-      return response.data.data.data; // Assuming the API returns an array of contacts
+      return response.data.data; // Assuming the API returns an array of contacts
     } catch (error) {
+      console.error('Error fetching contacts:', error);
+      throw error;
+    }
+  },
+  async getcontact(id: number){
+    try{
+      const response = await axios.get(BASE_URL+"contact/display"+id);
+      console.log(response.data)
+      return response.data;
+    }
+    catch(error){
       console.error('Error fetching contacts:', error);
       throw error;
     }
@@ -33,6 +44,16 @@ export const contactService = {
       return response.data; // Assuming the API returns the created contact
     } catch (error) {
       console.error('Error creating contact:', error);
+      throw error;
+    }
+  },
+  async updateContact(id: number, updatedContact: Partial<Contact>): Promise<any> {
+    try {
+      const response = await axios.put(`${BASE_URL}contact/update/${id}`, updatedContact); // Sending PUT request
+      console.log(response.data);
+      return response.data; // Assuming the API returns a success message and updated contact id
+    } catch (error) {
+      console.error('Error updating contact:', error);
       throw error;
     }
   },

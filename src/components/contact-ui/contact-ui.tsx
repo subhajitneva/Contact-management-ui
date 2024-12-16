@@ -13,6 +13,7 @@ export class ContactUi {
   @State() data: Contact[] = [];
   @State() currentRowIndex: number = -1;
   @State() formData: Partial<Contact> = { fname: '', lname: '', phoneNo: null };
+  buttonText = "";
 
   // Fetch data from the API when the component loads
   async componentWillLoad() {
@@ -25,11 +26,10 @@ export class ContactUi {
   }
 
   // Edit and Delete functions
-  editRow = (index: number) => {
-    const rowData = this.data[index];
-    this.formData = { ...rowData };
-    this.currentRowIndex = index;
-    this.toggleModal();
+  editRow = (item: Contact) => {
+    console.log(item);
+    this.formData = item;
+    this.toggleModal('Edit');
   };
 
   deleteRow = (index: number) => {
@@ -43,6 +43,14 @@ export class ContactUi {
   // Form submit to create or update a record
   handleSubmit = async () => {
     const { fname, lname, phoneNo } = this.formData;
+    if ('id' in this.formData){
+      console.log("edit Mode on");
+
+    }
+    else{
+      console.log("Create mode on");
+
+    }
 
     // Validate form data
     if (!fname || !lname || !phoneNo) {
@@ -51,25 +59,40 @@ export class ContactUi {
     }
 
     try {
-      if (this.currentRowIndex === -1) {
-        // Create new contact via API
+      if ('id' in this.formData) {
+        // Updating an existing contact
+        const updatedData: Partial<Contact> = {}; // Only include fields that are provided
+        if (fname) updatedData.fname = fname;
+        if (lname) updatedData.lname = lname;
+        if (phoneNo) updatedData.phoneNo = Number(phoneNo);
+
+        // Call the update method
+        await contactService.updateContact(this.formData.id, updatedData);
+
+        // Refresh the data from the API after updating the contact
+        this.data = await contactService.getContacts();
+      } else {
+        // Creating a new contact
         await contactService.createContact({
-          id: 0,
+          id: 0, // id should be 0 or undefined when creating a new contact
           fname,
           lname,
           phoneNo,
         });
-        // Refresh the data from the API
+        // Refresh the data from the API after creating a new contact
         this.data = await contactService.getContacts();
       }
 
-      this.toggleModal(); // Close modal
+      this.toggleModal(''); // Close the modal
       this.resetForm(); // Reset form data
     } catch (error) {
       console.error('Error while submitting the form:', error);
       alert('Failed to save the contact. Please try again.');
     }
   };
+  getSingleRecord(id: any){
+    console.log(id)
+  }
 
   resetForm = () => {
     this.formData = { fname: '', lname: '', phoneNo: null };
@@ -97,7 +120,8 @@ export class ContactUi {
     return Math.ceil(this.data.length / this.rowsPerPage);
   }
 
-  toggleModal = () => {
+  toggleModal = (btnText: string) => {
+    this.buttonText = btnText;
     this.showModal = !this.showModal;
   };
 
@@ -105,7 +129,7 @@ export class ContactUi {
     return (
       <div id="body">
         <div class="create-btn-container">
-          <button class="but" onClick={this.toggleModal}>
+          <button class="but" onClick={() => this.toggleModal('Create')}>
             Create Contact
           </button>
         </div>
@@ -126,7 +150,7 @@ export class ContactUi {
                   <td>{row.lname}</td>
                   <td>{row.phoneNo}</td>
                   <td>
-                    <button onClick={() => this.editRow(index)} class="edit-btn">Edit</button>
+                    <button onClick={() => this.editRow(row)} class="edit-btn">Edit</button>
                     <button onClick={() => this.deleteRow(index)} class="delete-btn">Delete</button>
                   </td>
                 </tr>
@@ -169,9 +193,9 @@ export class ContactUi {
                 />
                 <div class="modal-actions">
                   <button type="button" onClick={this.handleSubmit} class="but">
-                    {this.currentRowIndex === -1 ? 'Create' : 'Save'}
+                    {this.buttonText}
                   </button>
-                  <button type="button" onClick={this.toggleModal} class="close">
+                  <button type="button" onClick={() => this.toggleModal('')} class="close">
                     Close
                   </button>
                 </div>

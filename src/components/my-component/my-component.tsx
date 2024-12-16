@@ -8,9 +8,7 @@ import { Component, h } from '@stencil/core';
 export class MyComponent {
   render() {
     return <div>
-      <div>
         <contact-ui></contact-ui>
-      </div>
     </div>;
   }
 }
