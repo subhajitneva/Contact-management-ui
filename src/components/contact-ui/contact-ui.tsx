@@ -32,11 +32,19 @@ export class ContactUi {
     this.toggleModal('Edit');
   };
 
-  deleteRow = (index: number) => {
+  deleteRow = async (id: number) => {
     const confirmation = window.confirm('Are you sure you want to delete this record?');
     if (confirmation) {
-      const updatedData = this.data.filter((_, i) => i !== index);
-      this.data = updatedData;
+      try {
+        const report = await contactService.deleteContact(id);
+        console.log(report);
+
+        this.data = await contactService.getContacts();
+
+      } catch (error) {
+        console.error('Error while submitting the form:', error);
+        alert('Failed to save the contact. Please try again.');
+      }
     }
   };
 
@@ -151,7 +159,7 @@ export class ContactUi {
                   <td>{row.phoneNo}</td>
                   <td>
                     <button onClick={() => this.editRow(row)} class="edit-btn">Edit</button>
-                    <button onClick={() => this.deleteRow(index)} class="delete-btn">Delete</button>
+                    <button onClick={() => this.deleteRow(row.id)} class="delete-btn">Delete</button>
                   </td>
                 </tr>
               ))}
